@@ -1,6 +1,13 @@
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import users, sessions
+from .database import engine
+from .config import settings
+from . import models
+
+
+models.Base.metadata.create_all(bind=engine)
+
 
 app= FastAPI()
 
@@ -17,4 +24,4 @@ app.include_router(users.router)
 
 @app.get("/")
 def test():
-    return "hello project setup"
+    return settings
