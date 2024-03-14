@@ -5,7 +5,7 @@ from .database import engine
 from .config import settings
 from . import models
 
-
+## this line creates the tables on startup if they are not there. use alembic for updates
 models.Base.metadata.create_all(bind=engine)
 
 

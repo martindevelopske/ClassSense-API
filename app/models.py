@@ -14,7 +14,6 @@ class User(Base):
     email=mapped_column(String, nullable=False, unique=True)
     password=mapped_column(String, nullable=False)
     created_at=mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
-    roles=relationship("Roles", back_populates="user")
 
 
 class Roles(Base):
