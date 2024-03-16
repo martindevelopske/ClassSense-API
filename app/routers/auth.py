@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 from .. import models,schemas, database
 from .. import utils
 
-router= APIRouter(prefix="/login", tags=["authentication"])
+router= APIRouter( tags=["authentication"])
 
-@router.post("/", response_model=schemas.UserOut, status_code=status.HTTP_200_OK)
+@router.post("/login", response_model=schemas.UserOut, status_code=status.HTTP_200_OK)
 async def login(userData: schemas.UserLogin, res: Response, db: Session= Depends(database.get_db)):
     user = db.query(models.Users).filter(models.Users.email == userData.email).first()
     # print(user)
@@ -24,3 +24,7 @@ async def login(userData: schemas.UserLogin, res: Response, db: Session= Depends
     # set the response cookie
     res.set_cookie(key="userToken", value=accessToken)
     return user
+
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(res: Response):
+    res.set_cookie(key="userToken", value="")

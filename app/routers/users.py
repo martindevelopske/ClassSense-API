@@ -20,6 +20,8 @@ async def createUser(userData: schemas.UserCreate, db: Session = Depends(databas
         db.commit()
         db.refresh(newUser)
         print(newUser)
+        #assing user the student role
+        newRole= models.UserRoles(user_id=newUser.id, role_id=1)
         return newUser
     except SQLAlchemyError as error:
         return error
