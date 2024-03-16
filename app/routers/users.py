@@ -7,22 +7,26 @@ from .. import utils
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
-async def createUser(user_data: schemas.UserCreate, db: Session = Depends(database.get_db) ):
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def createUser(userData: schemas.UserCreate, db: Session = Depends(database.get_db)):
     try:
-        user_data_dict=user_data.model_dump()
-        user_data_dict['password']= utils.get_password_hash(user_data_dict["password"])
-        new_user= models.User(**user_data_dict)
-        db.add(new_user)
+        print(type(userData))
+        userDataDict=userData.model_dump()
+        userDataDict['password']= utils.getPasswordHash(userDataDict["password"])
+        print(userDataDict)
+        # newUser= models.Users(**userDataDict)
+        newUser= models.Users(email=userDataDict["email"], password=userDataDict['password'])
+        db.add(newUser)
         db.commit()
-        db.refresh(new_user)
-        return new_user
+        db.refresh(newUser)
+        print(newUser)
+        return newUser
     except SQLAlchemyError as error:
         return error
     
 @router.get("/{id}", status_code=status.HTTP_302_FOUND, response_model=schemas.UserOut)
 async def getUser(id: int, db: Session= Depends(database.get_db)):
-    user = db.query(models.User).filter(models.User.id == id).first()
+    user = db.query(models.Users).filter(models.Users.id == id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"User with id: {id} does not exist")
