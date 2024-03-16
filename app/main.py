@@ -1,6 +1,6 @@
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import users, sessions
+from .routers import users, sessions, instructors
 from .database import engine
 from .config import settings
 from . import models
@@ -18,6 +18,8 @@ allowedOrigins=["*"]
 app.add_middleware(CORSMiddleware, allow_origins=allowedOrigins, allow_methods=["*"], allow_headers=["*"])
 #application routes
 app.include_router(users.router)
+app.include_router(sessions.router)
+app.include_router(instructors.router)
 
 
 
