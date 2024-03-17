@@ -10,16 +10,20 @@ router = APIRouter(prefix="/users", tags=["users"])
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def createUser(userData: schemas.UserCreate, db: Session = Depends(database.get_db)):
     try:
-        print(type(userData))
         userDataDict=userData.model_dump()
+        #check existing user
+        user = db.query(models.Users).filter(models.Users.email == userDataDict["email"]).first()
+        if user:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail=f"User with that email already exists")
+
+
         userDataDict['password']= utils.getPasswordHash(userDataDict["password"])
-        print(userDataDict)
         # newUser= models.Users(**userDataDict)
         newUser= models.Users(email=userDataDict["email"], password=userDataDict['password'])
         db.add(newUser)
         db.commit()
         db.refresh(newUser)
-        print(newUser)
         #assing user the student role
         newRole= models.UserRoles(user_id=newUser.id, role_id=1)
         return newUser

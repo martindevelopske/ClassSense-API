@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 
 
@@ -34,8 +35,7 @@ class UserOut(BaseModel):
 
 class SessionCreate(BaseModel):
     name: str
-    instructor_id: int
-    location_id: int
+    location_id: Optional[int]
     status: str
 
 class SessionOut(BaseModel):

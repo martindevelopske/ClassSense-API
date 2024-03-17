@@ -160,7 +160,10 @@ class UserRoles(Base):
 
     id = Column(Integer, primary_key=True)
     role_id = Column(Integer, ForeignKey("roles.id", ondelete="CASCADE"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    instructor_id = Column(Integer, ForeignKey("instructors.id", ondelete="CASCADE"))
+
+   
 
 class Sessions(Base):
     __tablename__ = 'sessions'
