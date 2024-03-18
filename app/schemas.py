@@ -41,6 +41,9 @@ class SessionCreate(BaseModel):
 class AddSessionMember(BaseModel):
     sessionId: int
 
+class getSessionMembers(BaseModel):
+    sessionId: int
+
 class SessionOut(BaseModel):
     name: str
     instructor_id: int

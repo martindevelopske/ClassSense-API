@@ -41,15 +41,6 @@ async def getAllSessions(db: Session= Depends(database.get_db), currentUser= Dep
     return sessions
 
 
-@router.get("/{id}", status_code=status.HTTP_302_FOUND, response_model=schemas.SessionOut)
-async def getSession(id: int, db: Session= Depends(database.get_db)):
-    session = db.query(models.Sessions).filter(models.Sessions.id == id).first()
-    if not session:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Session with id: {id} does not exist")
-
-    return session
-
 @router.post("/members", status_code=status.HTTP_200_OK )
 async def addSessionMember(data: schemas.AddSessionMember, db: Session = Depends(database.get_db), currentUser= Depends(utils.getCurrentUser)):
 
@@ -66,13 +57,55 @@ async def addSessionMember(data: schemas.AddSessionMember, db: Session = Depends
         print(session)
         if not session:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Session with id: {id} does not exist")
+                                detail=f"Session with id: {sessionId} does not exist")
         #check whether the user is already in the sesion
         inSession=db.query(models.SessionMembers).filter((models.SessionMembers.user_id == currentUserId) &  (models.SessionMembers.session_id == sessionId)).first()
-        print("--------------------------")
         print(inSession)
-        if inSession:
+        if inSession is not None:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                                 detail=f"user with id: {currentUserId} already in the session")
+        
+        newRecord= models.SessionMembers(session_id= sessionId, user_id= currentUserId)
+        db.add(newRecord)
+        db.commit()
+        db.refresh(newRecord)
+        return newRecord
     except Exception as error:
-         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="something went wrong")
+         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,  detail=f"An error occurred: {str(error)}")
+
+
+@router.get("/members", status_code=status.HTTP_302_FOUND)
+async def getSessionMembers(data: schemas.getSessionMembers, db: Session = Depends(database.get_db), currentUser= Depends(utils.getCurrentUser)):
+    try:
+        sessionId= data.sessionId
+        print("cad")
+        print(type(data.sessionId), "sesh")
+        currentUserId= currentUser["user"].id
+
+        #check whether user is instructor and is creator
+        isallowed= currentUser['userType']== "instructor"
+        if not isallowed:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to view session members.")
+        
+        #check whether session exitsts
+        session = db.query(models.Sessions).filter(models.Sessions.id == sessionId).first()
+        print(session)
+        if not session:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Session with id: {sessionId} does not exist")
+        
+        #get members
+        members=db.query(models.SessionMembers).filter(models.SessionMembers.session_id == sessionId).all()
+        print(members)
+        return members
+    except Exception as error:
+        return f'something went woring, {error}'
+
+@router.get("/{id}", status_code=status.HTTP_302_FOUND, response_model=schemas.SessionOut)
+async def getSession(id: int, db: Session= Depends(database.get_db)):
+    session = db.query(models.Sessions).filter(models.Sessions.id == id).first()
+    if not session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Session with id: {id} does not exist")
+
+    return session
