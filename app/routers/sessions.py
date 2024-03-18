@@ -42,10 +42,37 @@ async def getAllSessions(db: Session= Depends(database.get_db), currentUser= Dep
 
 
 @router.get("/{id}", status_code=status.HTTP_302_FOUND, response_model=schemas.SessionOut)
-async def get_session(id: int, db: Session= Depends(database.get_db)):
+async def getSession(id: int, db: Session= Depends(database.get_db)):
     session = db.query(models.Sessions).filter(models.Sessions.id == id).first()
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Session with id: {id} does not exist")
 
     return session
+
+@router.post("/members", status_code=status.HTTP_200_OK )
+async def addSessionMember(data: schemas.AddSessionMember, db: Session = Depends(database.get_db), currentUser= Depends(utils.getCurrentUser)):
+
+    try:
+        print(data)
+        sessionId= data.sessionId
+        currentUserId= currentUser["user"].id
+        #check whether user is student
+        isallowed= currentUser['userType']== "student"
+        if not isallowed:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to join a sessions.")
+        #check whether session exitsts
+        session = db.query(models.Sessions).filter(models.Sessions.id== sessionId).first()
+        print(session)
+        if not session:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Session with id: {id} does not exist")
+        #check whether the user is already in the sesion
+        inSession=db.query(models.SessionMembers).filter((models.SessionMembers.user_id == currentUserId) &  (models.SessionMembers.session_id == sessionId)).first()
+        print("--------------------------")
+        print(inSession)
+        if inSession:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                                detail=f"user with id: {currentUserId} already in the session")
+    except Exception as error:
+         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="something went wrong")

@@ -177,12 +177,20 @@ class Sessions(Base):
 
     instructor = relationship("Instructors", back_populates="sessions")
 
-class UserSessions(Base):
-    __tablename__ = 'user_sessions'
+class SessionMembers(Base):
+    __tablename__= "session_members"
 
     id = Column(Integer, primary_key=True)
     session_id = Column(Integer, ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+
+# class UserSessions(Base):
+#     __tablename__ = 'user_sessions'
+
+#     id = Column(Integer, primary_key=True)
+#     session_id = Column(Integer, ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False)
+#     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
 class SessionInstructors(Base):
     __tablename__ = 'session_instructors'

@@ -35,8 +35,11 @@ class UserOut(BaseModel):
 
 class SessionCreate(BaseModel):
     name: str
-    location_id: Optional[int]
+
     status: str
+
+class AddSessionMember(BaseModel):
+    sessionId: int
 
 class SessionOut(BaseModel):
     name: str
