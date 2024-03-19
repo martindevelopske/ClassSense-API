@@ -1,6 +1,6 @@
 from fastapi import APIRouter, FastAPI, Request, HTTPException,status
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import users, sessions, instructors, auth
+from .routers import users, sessions, instructors, auth, attendance
 from .database import engine
 from .config import settings
 from . import models
@@ -27,6 +27,7 @@ app.include_router(users.router)
 app.include_router(sessions.router)
 app.include_router(instructors.router)
 app.include_router(auth.router)
+app.include_router(attendance.router)
 
 
 

@@ -30,7 +30,7 @@ async def createSession(session_data: schemas.SessionCreate, db: Session = Depen
         return error
     
 
-@router.get("/", status_code=status.HTTP_302_FOUND, )
+@router.get("/", status_code=status.HTTP_200_OK, )
 async def getAllSessions(db: Session= Depends(database.get_db), currentUser= Depends(utils.getCurrentUser)):
     print(currentUser, "current")
     sessions = db.query(models.Sessions).all()
@@ -39,6 +39,15 @@ async def getAllSessions(db: Session= Depends(database.get_db), currentUser= Dep
                             detail=f"no sessions in the database")
 
     return sessions
+
+@router.get("/userSessions", status_code=status.HTTP_200_OK, )
+async def getUserSessions(db: Session= Depends(database.get_db), currentUser= Depends(utils.getCurrentUser)):
+    currentUserId= currentUser["user"].id
+    userSessions= db.query(models.SessionMembers).filter(models.SessionMembers.user_id == currentUserId).all()
+    if not userSessions:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"no sessions in the database")
+    return userSessions
 
 
 @router.post("/members", status_code=status.HTTP_200_OK )
@@ -74,12 +83,11 @@ async def addSessionMember(data: schemas.AddSessionMember, db: Session = Depends
          raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,  detail=f"An error occurred: {str(error)}")
 
 
-@router.get("/members", status_code=status.HTTP_302_FOUND)
+@router.get("/members", status_code=status.HTTP_200_OK)
 async def getSessionMembers(data: schemas.getSessionMembers, db: Session = Depends(database.get_db), currentUser= Depends(utils.getCurrentUser)):
     try:
         sessionId= data.sessionId
-        print("cad")
-        print(type(data.sessionId), "sesh")
+      
         currentUserId= currentUser["user"].id
 
         #check whether user is instructor and is creator
@@ -100,12 +108,13 @@ async def getSessionMembers(data: schemas.getSessionMembers, db: Session = Depen
         return members
     except Exception as error:
         return f'something went woring, {error}'
+    
+    
+# @router.get("/{id}", status_code=status.HTTP_200_OK, response_model=schemas.SessionOut)
+# async def getSession(id: int, db: Session= Depends(database.get_db)):
+#     session = db.query(models.Sessions).filter(models.Sessions.id == id).first()
+#     if not session:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+#                             detail=f"Session with id: {id} does not exist")
 
-@router.get("/{id}", status_code=status.HTTP_302_FOUND, response_model=schemas.SessionOut)
-async def getSession(id: int, db: Session= Depends(database.get_db)):
-    session = db.query(models.Sessions).filter(models.Sessions.id == id).first()
-    if not session:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Session with id: {id} does not exist")
-
-    return session
+#     return session
