@@ -40,7 +40,9 @@ class SessionCreate(BaseModel):
 
 class AddSessionMember(BaseModel):
     sessionId: int
-
+class deleteAttendanceRecord(BaseModel):
+    studentId: int
+    sessionId: int
 class getSessionMembers(BaseModel):
     sessionId: int
 
