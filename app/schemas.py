@@ -1,12 +1,21 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 
 
 class UserCreate(BaseModel):
     email: str
     password: str
+
+class User(BaseModel):
+    id: int
+    email: str
+
+class Instructor(BaseModel):
+    id: int
+    email: str
+
 
 class UserLogin(BaseModel):
     email: str
@@ -19,16 +28,16 @@ class InstructorCreate(BaseModel):
 
 
 class InstructorOut(BaseModel):
-    email: str
-    created_at: datetime
+    user: Instructor
+    userType: str
 
     class Config: 
         orm_mode: True
 
 
 class UserOut(BaseModel):
-    email: str
-    created_at: datetime
+    user: User
+    userType: str
 
     class Config: 
         orm_mode: True

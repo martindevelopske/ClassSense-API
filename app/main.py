@@ -15,18 +15,18 @@ models.Base.metadata.create_all(bind=engine)
 
 app= FastAPI()
 
-allowedOrigins=["*"]
+allowedOrigins=["http://localhost","http://127.0.0.1", 'http://localhost:5173']
 
 
 #middlewares
-app.add_middleware(CORSMiddleware, allow_origins=allowedOrigins, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=allowedOrigins, allow_methods=["*"], allow_headers=["*"], allow_credentials=True, expose_headers=["*"])
 
     
 #application routes
 app.include_router(users.router)
-app.include_router(sessions.router)
-app.include_router(instructors.router)
 app.include_router(auth.router)
+app.include_router(instructors.router)
+app.include_router(sessions.router)
 app.include_router(attendance.router)
 
 
