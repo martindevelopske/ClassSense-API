@@ -22,7 +22,7 @@ async def login(userData: schemas.UserLogin, res: Response, db: Session = Depend
             # Create and return JWT token for instructor
             accessToken =  utils.createAccessToken(data={"userId": instructor.id, "userType": "instructor"})
             
-            res.set_cookie(key="userToken", value=accessToken, domain="http://localhost:5173", samesite="none")
+            res.set_cookie(key="userToken", value=accessToken)
             return {"user": instructor, "userType": "instructor"}
         # Verify password for user
         verify = utils.verifyPassword(userData.password, user.password)
@@ -37,6 +37,10 @@ async def login(userData: schemas.UserLogin, res: Response, db: Session = Depend
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
 async def logout(res: Response):
-    # Clear the userToken cookie by setting its value to an empty string
-    res.set_cookie(key="userToken", value="",)
-    return {"message": "Logged out successfully"}
+    try:
+
+        # Clear the userToken cookie by setting its value to an empty string
+        res.set_cookie(key="userToken", value="",)
+        return {"message": "Logged out successfully"}
+    except Exception as error:
+        print(error)

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Response, Depends, Request
 from app import schemas
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from .. import database,models, schemas
 from .. import utils
@@ -43,10 +43,42 @@ async def getAllSessions(db: Session= Depends(database.get_db), currentUser= Dep
 @router.get("/userSessions", status_code=status.HTTP_200_OK, )
 async def getUserSessions(db: Session= Depends(database.get_db), currentUser= Depends(utils.getCurrentUser)):
     currentUserId= currentUser["user"].id
-    userSessions= db.query(models.SessionMembers).filter(models.SessionMembers.user_id == currentUserId).all()
-    if not userSessions:
+    userSessions=[]
+    queryResults= db.query(models.SessionMembers).filter(models.SessionMembers.user_id == currentUserId).all()
+    if not queryResults:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"no sessions in the database")
+    
+    #get full details
+    for session in queryResults:
+        id = int(session.session_id)
+        print(id, type(id))
+        session, instructor = db.query(models.Sessions, models.Instructors).join(models.Instructors, models.Sessions.instructor_id == models.Instructors.id).filter(models.Sessions.id == id).first()
+
+        print(session, instructor)
+        # Extract specific attributes from session and instructor objects
+        session_data = {
+            "id": session.id,
+            "location_id": session.location_id,
+            "created_at": session.created_at,
+            "name": session.name,
+            "status": session.status,
+        }
+
+        instructor_data = {
+            "email": instructor.email,
+            # Add more attributes if needed
+        }
+
+        fullSessionDetails = {
+            "session": session_data,
+            "instructor": instructor_data
+        }
+        userSessions.append(fullSessionDetails)
+        # if session, instructor:
+        #     userSessions.append(fullSessionDetails)
+    
+   
     return userSessions
 
 
