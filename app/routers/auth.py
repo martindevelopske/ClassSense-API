@@ -7,7 +7,7 @@ router = APIRouter(tags=["authentication"])
 
 @router.post("/login", status_code=status.HTTP_200_OK, response_model=schemas.UserOut)
 async def login(userData: schemas.UserLogin, res: Response, db: Session = Depends(database.get_db)):
-    try:
+    # try:
         # Check if the user exists
         user = db.query(models.Users).filter(models.Users.email == userData.email).first()
         if not user:
@@ -32,8 +32,8 @@ async def login(userData: schemas.UserLogin, res: Response, db: Session = Depend
         accessToken = utils.createAccessToken(data={"userId": user.id, "userType": "student"})
         res.set_cookie(key="userToken", value=accessToken)
         return {"user":user, "userType": "student"}
-    except Exception as error:
-         print("something went wrong", error)
+    # except Exception as error:
+    #       raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="something went wrong.")
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
 async def logout(res: Response):

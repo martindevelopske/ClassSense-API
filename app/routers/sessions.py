@@ -39,6 +39,20 @@ async def getAllSessions(db: Session= Depends(database.get_db), currentUser= Dep
                             detail=f"no sessions in the database")
 
     return sessions
+@router.get("/instructorSessions", status_code=status.HTTP_200_OK, )
+async def getInstructorSessions(db: Session= Depends(database.get_db), currentUser= Depends(utils.getCurrentUser)):
+    isallowed= currentUser['userType']== "instructor"
+    print(isallowed, "is allow")
+    print(currentUser['user'].email)
+    if not isallowed:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to view instructor sessions.")
+    
+    sessions = db.query(models.Sessions).filter(models.Sessions.instructor_id== currentUser["user"].id).all()
+    if not sessions:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"no sessions in the database")
+
+    return sessions
 
 @router.get("/userSessions", status_code=status.HTTP_200_OK, )
 async def getUserSessions(db: Session= Depends(database.get_db), currentUser= Depends(utils.getCurrentUser)):
@@ -85,7 +99,7 @@ async def getUserSessions(db: Session= Depends(database.get_db), currentUser= De
 @router.post("/members", status_code=status.HTTP_200_OK )
 async def addSessionMember(data: schemas.AddSessionMember, db: Session = Depends(database.get_db), currentUser= Depends(utils.getCurrentUser)):
 
-    try:
+    # try:
         print(data)
         sessionId= data.sessionId
         currentUserId= currentUser["user"].id
@@ -111,13 +125,13 @@ async def addSessionMember(data: schemas.AddSessionMember, db: Session = Depends
         db.commit()
         db.refresh(newRecord)
         return newRecord
-    except Exception as error:
-         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,  detail=f"An error occurred: {str(error)}")
+    # except Exception as error:
+    #      raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,  detail=f"An error occurred: {str(error)}")
 
 
 @router.get("/members", status_code=status.HTTP_200_OK)
 async def getSessionMembers(data: schemas.getSessionMembers, db: Session = Depends(database.get_db), currentUser= Depends(utils.getCurrentUser)):
-    try:
+    # try:
         sessionId= data.sessionId
       
         currentUserId= currentUser["user"].id
@@ -138,15 +152,15 @@ async def getSessionMembers(data: schemas.getSessionMembers, db: Session = Depen
         members=db.query(models.SessionMembers).filter(models.SessionMembers.session_id == sessionId).all()
         print(members)
         return members
-    except Exception as error:
-        return f'something went woring, {error}'
+    # except Exception as error:
+    #     return f'something went woring, {error}'
     
     
-# @router.get("/{id}", status_code=status.HTTP_200_OK, response_model=schemas.SessionOut)
-# async def getSession(id: int, db: Session= Depends(database.get_db)):
-#     session = db.query(models.Sessions).filter(models.Sessions.id == id).first()
-#     if not session:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-#                             detail=f"Session with id: {id} does not exist")
+@router.get("/{id}", status_code=status.HTTP_200_OK)
+async def getSession(id: int, db: Session= Depends(database.get_db)):
+    session = db.query(models.Sessions).filter(models.Sessions.id == id).first()
+    if not session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Session with id: {id} does not exist")
 
-#     return session
+    return session
